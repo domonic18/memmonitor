@@ -6,131 +6,13 @@ Created on 2016年3月18日
 @author: Dongming
 '''
 
-'''
-#    数据结构类型
-#    Native Heap
-#        --a(Total)
-#          |--[1,2,3,4,5,6,7,8....]
-#        --b(PrivateDirty)
-#          |--[1,2,3,4,5,6,7,8....]
-#        --c
-#          |--[1,2,3,4,5,6,7,8....]
-#    Davil Heap
-#        --a(Total)
-#          |--[1,2,3,4,5,6,7,8....]
-#        --b(PrivateDirty)
-#          |--[1,2,3,4,5,6,7,8....]
-#        --c
-#          |--[1,2,3,4,5,6,7,8....]
-#由以上数据内容，形成的数据结构
-#
-#    
-#    Clist_type
-#      Clist_coloum
-#          |--Clist_data(list)
-#
-'''
-class Clist_data(object):
-    list_result = []
-    def __init__(self ):
-        self.list_result = []
-#        print self.list_result
-    def add(self , num):
-        self.list_result.append(num)
-    def getlenth(self):
-        return len(self.list_result)
-    def getDatas(self ):
-        return self.list_result
-    
-class Clist_coloum( object ):
-    list_datas = []
-    list_coloum_type = []
-    def __init__(self , list_type ):
-        self.list_datas = []
-        self.list_coloum_type = []
-        print self.list_datas
-        self.list_coloum_type = list_type
-        for i in xrange(len(self.list_coloum_type)):
-            idata = Clist_data()
-            self.list_datas.append(idata)        
-    def getData(self , name ):
-        try:
-            index = (self.list_coloum_type).index( name )
-            return (self.list_datas[index]).getDatas()
-        except:
-            print "Not foud Index"
-    def setData(self , name  , value):
-        try:
-            index = (self.list_coloum_type).index( name )
-            self.list_datas[index].add(value)
-        except:
-            print "Not foud Index"
-
-class Clist_type:
-    def __init__(self ):
-        self.list_types = []
-        self.list_coloums = []
-        
-    def settag(self , typename , list_coloum):
-        try:
-            index = (self.list_types).index(typename )
-            return index
-        except:
-            self.list_types.append(typename)
-            icoloum  = Clist_coloum( list_coloum )
-            self.list_coloums.append(icoloum)
-    def settypedata(self , typename , coluname , value):
-        try:
-            index = (self.list_types).index( typename )
-            return (self.list_coloums[index]).setData(coluname , value)
-        except:
-            print "Not foud Index"
-    
-    def gettypedata(self , typename , coluname ):
-        try:
-            index = (self.list_types).index( typename )
-            return (self.list_coloums[index]).getData(coluname)
-        except:
-            print "Not foud Index"
-
-#CONST_coloum_memtype = ["Total" , "PrivateDirty" , "Clean" , "SwappedDirty" , "Heap_size" ,"Heap_Alloc" , "Heap_Free" ]
-#cola = Clist_coloum(CONST_coloum_memtype)
-#print cola
-#colb = Clist_coloum(CONST_coloum_memtype)
-#print colb
-#cola.setData("Total", 1)
-#cola.setData("Total", 2)
-#cola.setData("Total", 3)
-#cola.setData("Clean", 11)
-#cola.setData("Clean", 12)
-#print cola.getData("Total")
-#print cola.getData("Clean")
-#
-#colb.setData("Total", 51)
-#colb.setData("Total", 52)
-#colb.setData("PrivateDirty", 101)
-#colb.setData("PrivateDirty", 102)
-#print colb.getData("Total")
-#print colb.getData("PrivateDirty")
-#
-#meminfo  = Clist_type()
-#meminfo.settag("Native Heap" , CONST_coloum_memtype)
-#meminfo.settag("Davil Heap" , CONST_coloum_memtype)
-#meminfo.settypedata("Native Heap", "Total", 1)
-#meminfo.settypedata("Native Heap", "Total", 2)
-#meminfo.settypedata("Native Heap", "Heap_size", 50)
-#meminfo.settypedata("Native Heap", "Heap_size", 51)
-#meminfo.settypedata("Davil Heap", "Total", 101 )
-#meminfo.settypedata("Davil Heap", "Total", 102 )
-#meminfo.settypedata("Davil Heap", "Total", 103 )
-#print meminfo.gettypedata("Native Heap", "Total" )
-#print meminfo.gettypedata("Native Heap", "Heap_size" )
-#print meminfo.gettypedata("Davil Heap", "Total" )
 
 import os
 import datetime
 import time
 import sys
+
+import CListEx
 
 class memlog:
     str_dir_result = ""
@@ -242,8 +124,7 @@ class memloganalyze:
             for pfile in list_log:
                 print pfile
                 self.parseFile(pfile , nindexname)
-#            self.writeResult( nindexname )
-#     
+
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         appname = sys.argv[1]
