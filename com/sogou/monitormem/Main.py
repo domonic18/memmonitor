@@ -30,7 +30,7 @@ Created on 2016年3月18日
 #          |--Clist_data(list)
 #
 '''
-class Clist_data( object ):
+class Clist_data(object):
     list_result = []
     def __init__(self ):
         self.list_result = []
@@ -139,12 +139,12 @@ class memlog:
     interval = 1
     def __init__(self  , name ):
         self.str_app_name = name
-        self.str_dir_result = os.getcwd() + '\\result'
+        self.str_dir_result = os.path.join(os.getcwd(), "result")
         if os.path.exists( self.str_dir_result ) == False:
             os.mkdir(self.str_dir_result)
         
         currentdate = datetime.datetime.now()
-        self.str_path_result = self.str_dir_result + "\\" + str(currentdate)[0:10]
+        self.str_path_result = os.path.join(self.str_dir_result, str(currentdate)[0:10])
         if os.path.exists( self.str_path_result ) == False:
             os.mkdir(self.str_path_result)
         
@@ -159,7 +159,7 @@ class memlog:
     def WriteLog(self , content ):
         currentime = time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime())
         print currentime
-        path = self.str_path_result + "\\" + currentime + ".log"
+        path = os.path.join( self.str_path_result, currentime + ".log")
         fp = open(path,'wb')
         fp.writelines(content)
         fp.close()
@@ -220,7 +220,8 @@ class memloganalyze:
         return wb, ws  
                     
     def writeResult(self , filename):
-        filepath = self.str_path_output + "\\" + filename + ".xls"
+        #filepath = self.str_path_output + "\\" + filename + ".xls"
+        filepath = os.path.join(self.str_path_output, filename + '.xls')
         wb = xlwt.Workbook()
         for n in self.list_tag:
             ws = wb.add_sheet(n, cell_overwrite_ok=True)
@@ -267,7 +268,7 @@ if __name__ == '__main__':
                 mem.Run()
             elif select == "2":
                 dict_dir = {}
-                root = os.getcwd() + '\\result'
+                root = os.path.join( os.getcwd(), 'result')
                 for (path, dirs, files) in os.walk(root):
                     index = 1 
                     for name in dirs: 
@@ -277,7 +278,7 @@ if __name__ == '__main__':
                 ret = raw_input("Please select result path:\n")
                 if ret in dict_dir:
                     path = dict_dir[ret]
-                    inpath = root + "\\" + path
+                    inpath = os.path.join(root,path)
                     memanalyze = memloganalyze( inpath , root )
                     memanalyze.doAnalyze()
                     memanalyze.writeResult("result")
