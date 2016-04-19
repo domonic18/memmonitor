@@ -12,7 +12,8 @@ import datetime
 import time
 import sys
 
-import CListEx
+from CListEx import Clist_type
+
 
 class memlog:
     str_dir_result = ""
@@ -58,8 +59,30 @@ import re
 import xlwt
 
 class memloganalyze:
-    CONST_coloum_memtype = ["Total" , "PrivateDirty" , "Clean" , "SwappedDirty" , "Heap_size" ,"Heap_Alloc" , "Heap_Free" ]    
-    list_tag = ['Native Heap' , 'Dalvik Heap' , '.dex mmap','Other mmap']   
+    CONST_coloum_memtype = ["PssTotal" , 
+                            "PrivateDirty" , 
+                            "PrivateClean" , 
+                            "SwappedDirty" , 
+                            "Heap_size" ,
+                            "Heap_Alloc" , 
+                            "Heap_Free" ]    
+    list_tag = ['Native Heap' , 
+                'Dalvik Heap' , 
+                'Dalvik Other',
+                'Stack',
+                'Ashmem',
+                'Gfx dev',
+                'Other dev',
+                '.so mmap',
+                '.apk mmap',
+                '.ttf mmap',
+                '.oat mmap',
+                '.art mmap',
+                '.dex mmap',
+                'Unknown',
+                'GL',
+                'Other mmap',
+                'TOTAL']   
     def __init__(self  , ipath , opath ):
         self.dict_mem_result =  Clist_type()
         self.str_path_result = ipath
