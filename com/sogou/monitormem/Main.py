@@ -37,8 +37,33 @@ class memlog:
         command = "adb shell dumpsys meminfo " + self.str_app_name
         ret = os.popen(command).readlines()
         return ret
+
+    def getPID(self):
+        command = "adb -d shell ps "
+        ret = os.popen(command).readlines()
+        for iline in ret:
+            if iline.find("com.sohu.inputmethod.sogou") != -1 :
+                vectemp = iline.split(' ')
+                for n in vectemp:
+                    if n.startswith("com.sohu.inputmethod.sogou"):
+                        print iline
+                        return vectemp[4]
+                        #输出第四列内容即为pid
+                        #u0_a73    11560 186   946212 108448 ffffffff 00000000 S com.sohu.inputmethod.sogou
+        return 0
+    def getSMAPS(self , pid ):
+        command = "adb -d shell su --command='cat /proc/" + pid + "/smaps' "
+        ret = os.popen(command).readlines()
+        currentime = time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime())
+        print currentime
+        path = os.path.join( self.str_path_result, currentime + ".smaplog")
+        fp = open(path , 'wb')
+        fp.writelines(ret)
+        fp.close()
+
     def setInterval(self , interval):
         self.interval = int(interval)
+
     def WriteLog(self , content ):
         currentime = time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime())
         print currentime
@@ -46,11 +71,13 @@ class memlog:
         fp = open(path,'wb')
         fp.writelines(content)
         fp.close()
+
     def Run(self):
         print "Start Monitor\n"
         while True:
             print "Get Meminfo..."
             mem = self.getMeminfo()
+            self.getSMAPS( self.getPID() )
             self.WriteLog(mem)
             time.sleep(self.interval)
 
@@ -66,8 +93,25 @@ class memloganalyze:
                             "Heap_size" ,
                             "Heap_Alloc" , 
                             "Heap_Free" ]    
-    list_tag = ['Native Heap' , 
-                'Dalvik Heap' , 
+    # list_tag = ['Native Heap' ,
+    #             'Dalvik Heap' ,
+    #             'Dalvik Other',
+    #             'Stack',
+    #             'Ashmem',
+    #             'Gfx dev',
+    #             'Other dev',
+    #             '.so mmap',
+    #             '.apk mmap',
+    #             '.ttf mmap',
+    #             '.oat mmap',
+    #             '.art mmap',
+    #             '.dex mmap',
+    #             'Unknown',
+    #             'GL',
+    #             'Other mmap',
+    #             'TOTAL']
+    list_tag = [
+                'Dalvik Heap' ,
                 'Dalvik Other',
                 'Stack',
                 'Ashmem',
@@ -82,9 +126,10 @@ class memloganalyze:
                 'Unknown',
                 'GL',
                 'Other mmap',
-                'TOTAL']   
+                'TOTAL']
     def __init__(self  , ipath , opath ):
         self.dict_mem_result =  Clist_type()
+        self.list_RSS_result = []
         self.str_path_result = ipath
         self.str_path_output = opath
         if os.path.exists( self.str_path_output ) == False:
@@ -118,7 +163,37 @@ class memloganalyze:
                 num = verPattern.findall(line)
                 for n in xrange(0,len(num)):
                     self.dict_mem_result.settypedata( rowname, self.CONST_coloum_memtype[n], num[n])       
-    
+
+    def getRSS(self , line , flag):
+        r = line.replace(" ", "")
+        r = r.replace("Rss:" , "")
+        r = r.replace("kB" , "")
+        num = int(r)
+        return num
+
+
+    def parseSMAPFile(self , filepath ):
+        fp = open(filepath,'rb')
+        content = fp.readlines()
+        fp.close()
+        bFlag = 0
+        RSS = 0
+        for line in content:
+            #//apk@classes.dex或apk.classes2.dex
+
+            if line.find("apk@classes.dex") != -1 :
+                bFlag = 1
+            elif line.find("apk.classes2.dex") != -1 :
+                bFlag = 2
+
+            if bFlag > 0 and line.find("Rss") != -1:
+                RSS = RSS + self.getRSS( line , bFlag)
+                bFlag = 0
+        print RSS
+        self.list_RSS_result.append( RSS )
+
+
+
     def createExcelHandler(self , sheetName):  
         wb = xlwt.Workbook()  
         ws = wb.add_sheet(sheetName, cell_overwrite_ok=True)  
@@ -127,15 +202,20 @@ class memloganalyze:
     def writeResult(self , filename):
         #filepath = self.str_path_output + "\\" + filename + ".xls"
         filepath = os.path.join(self.str_path_output, filename + '.xls')
+        style=xlwt.easyxf('font: name Times New Roman', num_format_str='#,##0.00')
         wb = xlwt.Workbook()
         for n in self.list_tag:
             ws = wb.add_sheet(n, cell_overwrite_ok=True)
             for index in range(len(self.CONST_coloum_memtype)):
                 ws.write(0 , index , self.CONST_coloum_memtype[index] )#写第一列
                 list_temp = self.dict_mem_result.gettypedata(n, self.CONST_coloum_memtype[index])
-                style=xlwt.easyxf('font: name Times New Roman', num_format_str='#,##0.00')
                 for rownum in range(len(list_temp)):
                     ws.write(rownum + 1 , index , int(list_temp[rownum]) , style)
+        #写RSS内存值
+        ws = wb.add_sheet("RSS", cell_overwrite_ok=True)
+        ws.write(0 , 0 , "RSS" )#写第一列
+        for rownum in range(len(self.list_RSS_result)):
+            ws.write(rownum + 1 , 0 , int(self.list_RSS_result[rownum]) , style)
         wb.save(filepath)
                     
     def doAnalyze(self):
@@ -147,6 +227,10 @@ class memloganalyze:
             for pfile in list_log:
                 print pfile
                 self.parseFile(pfile , nindexname)
+        list_log = self.ftw(self.str_path_result , "*.smaplog")
+        for pfile in list_log:
+            print pfile
+            self.parseSMAPFile(pfile)
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
