@@ -52,7 +52,7 @@ class memlog:
                         #u0_a73    11560 186   946212 108448 ffffffff 00000000 S com.sohu.inputmethod.sogou
         return 0
     def getSMAPS(self , pid ):
-        command = "adb -d shell su --command='cat /proc/" + pid + "/smaps' "
+        command = "adb -d shell su -c 'cat /proc/" + str(pid) + "/smaps' "
         ret = os.popen(command).readlines()
         currentime = time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime())
         print currentime
