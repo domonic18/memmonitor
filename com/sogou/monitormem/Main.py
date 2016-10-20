@@ -46,8 +46,11 @@ class memlog:
                 vectemp = iline.split(' ')
                 for n in vectemp:
                     if n.startswith("com.sohu.inputmethod.sogou"):
+                        i = 1 #从第二列开始查找，即下标为1
+                        while vectemp[i] == "":
+                            i = i+1
                         print iline
-                        return vectemp[4]
+                        return vectemp[i]
                         #输出第四列内容即为pid
                         #u0_a73    11560 186   946212 108448 ffffffff 00000000 S com.sohu.inputmethod.sogou
         return 0
